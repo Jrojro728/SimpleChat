@@ -165,8 +165,6 @@ void CSimpleChatDlg::OnBnClickedButton3()
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
-	CString FileName;
-	FileName = "C:\\聊天记录.txt";
 	
 	CStdioFile FileWrite;
 	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
@@ -174,6 +172,8 @@ void CSimpleChatDlg::OnBnClickedButton3()
 		AfxMessageBox(_T("打开文件失败!"));
 		return;
 	}
+	DWORD dwFileLen = FileWrite.GetLength();
+	/*if ()*/
 
 	FileWrite.Flush();
 	FileWrite.SeekToEnd();
