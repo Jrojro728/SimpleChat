@@ -13,7 +13,7 @@
 #endif
 #include <string>
 
-CString new_Line(_T("\n"));
+CString new_Line("\r\n");
 CString FileName(_T("C:\\聊天记录.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -165,19 +165,32 @@ void CSimpleChatDlg::OnBnClickedButton3()
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
-	CString FileName;
-	FileName = "C:\\聊天记录.txt";
 	
-	CStdioFile FileWrite;
+	CFile FileWrite;
 	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
 	{
 		AfxMessageBox(_T("打开文件失败!"));
 		return;
 	}
+	DWORD dwFileLen = FileWrite.GetLength();
+	if (0 == dwFileLen)
+	{
+		const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+		FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+	}
+	int nSrcLen = (int)wcslen(str);
+	CStringA utf8String(str);
 
-	FileWrite.Flush();
+	int nBufLen = (nSrcLen + 1) * 6;
+	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
+
+	buffer[nLen] = 0;
+	utf8String.ReleaseBuffer();
 	FileWrite.SeekToEnd();
-	FileWrite.WriteString(str + new_Line);
+
+	FileWrite.Write(utf8String.GetBuffer(), nLen);
+	FileWrite.Write(new_Line.GetBuffer(), 2);
 	FileWrite.Close();
 }
 
