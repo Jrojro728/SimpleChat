@@ -13,7 +13,7 @@
 #endif
 #include <string>
 
-CString new_Line(_T("\n"));
+CString new_Line("\r\n");
 CString FileName(_T("C:\\聊天记录.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -166,7 +166,7 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
 	
-	CStdioFile FileWrite;
+	CFile FileWrite;
 	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
 	{
 		AfxMessageBox(_T("打开文件失败!"));
@@ -190,7 +190,7 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	FileWrite.SeekToEnd();
 
 	FileWrite.Write(utf8String.GetBuffer(), nLen);
-	FileWrite.Write(new_Line.GetBuffer(), 1);
+	FileWrite.Write(new_Line.GetBuffer(), 2);
 	FileWrite.Close();
 }
 
