@@ -173,11 +173,24 @@ void CSimpleChatDlg::OnBnClickedButton3()
 		return;
 	}
 	DWORD dwFileLen = FileWrite.GetLength();
-	/*if ()*/
+	if (0 == dwFileLen)
+	{
+		const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+		FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+	}
+	int nSrcLen = (int)wcslen(str);
+	CStringA utf8String(str);
 
-	FileWrite.Flush();
+	int nBufLen = (nSrcLen + 1) * 6;
+	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
+
+	buffer[nLen] = 0;
+	utf8String.ReleaseBuffer();
 	FileWrite.SeekToEnd();
-	FileWrite.WriteString(str + new_Line);
+
+	FileWrite.Write(utf8String.GetBuffer(), nLen);
+	FileWrite.Write(new_Line.GetBuffer(), 1);
 	FileWrite.Close();
 }
 

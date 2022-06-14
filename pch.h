@@ -11,5 +11,6 @@
 #include "framework.h"
 #include <fstream>
 #include <iostream>
+#include <atlenc.h>
 
 #endif //PCH_H
