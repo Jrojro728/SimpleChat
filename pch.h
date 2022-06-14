@@ -12,5 +12,6 @@
 #include <fstream>
 #include <iostream>
 #include <atlenc.h>
+#include <cstring>
 
 #endif //PCH_H
