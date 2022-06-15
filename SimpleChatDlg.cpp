@@ -7,6 +7,7 @@
 #include "SimpleChat.h"
 #include "SimpleChatDlg.h"
 #include "afxdialogex.h"
+#include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,6 +63,7 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, m_edit);
+	DDX_Control(pDX, IDC_BUTTON4, m_Btn1);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -105,6 +107,12 @@ BOOL CSimpleChatDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+
+	HINSTANCE hInstance;
+	HBITMAP hBitmap;
+	hInstance = ::AfxGetInstanceHandle();
+	hBitmap = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
+	m_Btn1.SetBitmap(hBitmap);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -176,7 +184,9 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	//{
 	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
 	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
-	//}
+	//
+	
+	//开始转换utf8
 	int nSrcLen = (int)wcslen(str);
 	CStringA utf8String(str);
 
@@ -186,9 +196,9 @@ void CSimpleChatDlg::OnBnClickedButton3()
 
 	buffer[nLen] = 0;
 	utf8String.ReleaseBuffer();
-	FileWrite.SeekToEnd();
+	FileWrite.SeekToEnd(); //定位到最后
 
-	FileWrite.Write(utf8String.GetBuffer(), nLen);
+	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
 	FileWrite.Write(new_Line.GetBuffer(), 2);
 	FileWrite.Close();
 }
