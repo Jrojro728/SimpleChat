@@ -172,11 +172,11 @@ void CSimpleChatDlg::OnBnClickedButton3()
 		return;
 	}
 	DWORD dwFileLen = FileWrite.GetLength();
-	if (0 == dwFileLen)
-	{
-		const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
-		FileWrite.Write(LeadBytes, sizeof(LeadBytes));
-	}
+	//if (0 == dwFileLen)
+	//{
+	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+	//}
 	int nSrcLen = (int)wcslen(str);
 	CStringA utf8String(str);
 
