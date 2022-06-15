@@ -14,7 +14,7 @@
 #endif
 
 CString new_Line("\r\n");
-CString FileName(_T("C:\\Users\\聊天记录.txt"));
+CString FileName(_T("C:\\聊天记录.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
