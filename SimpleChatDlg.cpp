@@ -13,7 +13,7 @@
 #define new DEBUG_NEW
 #endif
 
-CString new_Line("\r\n");
+CString new_Line("\n");
 CString FileName(_T("C:\\聊天记录.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -199,7 +199,7 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	FileWrite.SeekToEnd(); //定位到最后
 
 	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 2);
+	FileWrite.Write(new_Line.GetBuffer(), 1);
 	FileWrite.Close();
 }
 
