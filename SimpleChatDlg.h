@@ -36,4 +36,6 @@ public:
 	afx_msg void OnBnClickedButton4();
 	CEdit m_edit;
 	CBitmapButton m_Btn1;
+	afx_msg void OnBnClickedButton1();
+	CEdit m_edit1;
 };

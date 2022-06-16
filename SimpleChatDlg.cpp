@@ -15,6 +15,7 @@
 
 CString new_Line("\n");
 CString FileName(_T("C:\\聊天记录.txt"));
+CString UserFileName(_T("C:\\用户信息.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -64,6 +65,7 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT1, m_edit);
 	DDX_Control(pDX, IDC_BUTTON4, m_Btn1);
+	DDX_Control(pDX, IDC_EDIT2, m_edit1);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -72,6 +74,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON3, &CSimpleChatDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -222,4 +225,44 @@ void CSimpleChatDlg::OnBnClickedButton4()
 	GetDlgItem(IDC_STATIC0)->SetWindowText(str);
 
 	fileRead.Close();
+}
+
+void CSimpleChatDlg::OnBnClickedButton1()
+{
+	CString UserName;
+	CString PassWord;
+
+	m_edit1.GetWindowText(UserName);
+
+	CStdioFile FileWrite;
+	{
+		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
+		{
+			AfxMessageBox(_T("打开文件失败!"));
+			return;
+		}
+		DWORD dwFileLen = FileWrite.GetLength();
+		//if (0 == dwFileLen)
+		//{
+		//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+		//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+		//}
+
+		//开始转换utf8
+		int nSrcLen = (int)wcslen(UserName);
+		CStringA utf8String(UserName);
+
+		int nBufLen = (nSrcLen + 1) * 6;
+		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+		int nLen = AtlUnicodeToUTF8(UserName, nSrcLen, buffer, nBufLen);
+
+		buffer[nLen] = 0;
+		utf8String.ReleaseBuffer();
+		FileWrite.SeekToEnd(); //定位到最后
+
+		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
+		FileWrite.Write(new_Line.GetBuffer(), 1);
+		FileWrite.Close();
+	}
+	int nSrcLen;
 }
