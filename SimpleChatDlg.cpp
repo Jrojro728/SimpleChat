@@ -300,5 +300,5 @@ void CSimpleChatDlg::OnBnClickedButton1()
 
 void CAboutDlg::OnBnClickedButton5()
 {
-	system("git pull")
+	system("git pull");
 }
