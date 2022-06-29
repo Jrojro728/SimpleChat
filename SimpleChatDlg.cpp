@@ -35,6 +35,8 @@ public:
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedButton5();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -47,6 +49,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON5, &CAboutDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 
@@ -66,6 +69,8 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, m_edit);
 	DDX_Control(pDX, IDC_BUTTON4, m_Btn1);
 	DDX_Control(pDX, IDC_EDIT2, m_edit1);
+	DDX_Control(pDX, IDC_EDIT3, m_edit2);
+	DDX_Control(pDX, IDC_BUTTON5, m_Btn5);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -111,11 +116,17 @@ BOOL CSimpleChatDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 
-	HINSTANCE hInstance;
-	HBITMAP hBitmap;
-	hInstance = ::AfxGetInstanceHandle();
-	hBitmap = ::LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
-	m_Btn1.SetBitmap(hBitmap);
+	HINSTANCE hInstance0;
+	HBITMAP hBitmap0;
+	hInstance0 = ::AfxGetInstanceHandle();
+	hBitmap0 = ::LoadBitmap(hInstance0, MAKEINTRESOURCE(IDB_BITMAP1));
+	m_Btn1.SetBitmap(hBitmap0);
+
+	HINSTANCE hInstance1;
+	HBITMAP hBitmap1;
+	hInstance1 = ::AfxGetInstanceHandle();
+	hBitmap1 = ::LoadBitmap(hInstance1, MAKEINTRESOURCE(IDB_BITMAP2));
+	m_Btn5.SetBitmap(hBitmap1);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -233,6 +244,7 @@ void CSimpleChatDlg::OnBnClickedButton1()
 	CString PassWord;
 
 	m_edit1.GetWindowText(UserName);
+	m_edit2.GetWindowText(PassWord);
 
 	CStdioFile FileWrite;
 	{
@@ -242,11 +254,6 @@ void CSimpleChatDlg::OnBnClickedButton1()
 			return;
 		}
 		DWORD dwFileLen = FileWrite.GetLength();
-		//if (0 == dwFileLen)
-		//{
-		//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
-		//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
-		//}
 
 		//开始转换utf8
 		int nSrcLen = (int)wcslen(UserName);
@@ -264,5 +271,34 @@ void CSimpleChatDlg::OnBnClickedButton1()
 		FileWrite.Write(new_Line.GetBuffer(), 1);
 		FileWrite.Close();
 	}
-	int nSrcLen;
+	{
+		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
+		{
+			AfxMessageBox(_T("打开文件失败!"));
+			return;
+		}
+		DWORD dwFileLen = FileWrite.GetLength();
+
+		//开始转换utf8
+		int nSrcLen = (int)wcslen(PassWord);
+		CStringA utf8String(PassWord);
+
+		int nBufLen = (nSrcLen + 1) * 6;
+		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+		int nLen = AtlUnicodeToUTF8(PassWord, nSrcLen, buffer, nBufLen);
+
+		buffer[nLen] = 0;
+		utf8String.ReleaseBuffer();
+		FileWrite.SeekToEnd(); //定位到最后
+
+		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
+		FileWrite.Write(new_Line.GetBuffer(), 1);
+		FileWrite.Close();
+	}
+}
+
+
+void CAboutDlg::OnBnClickedButton5()
+{
+	system("git pull")
 }

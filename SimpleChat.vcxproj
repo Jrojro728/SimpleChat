@@ -207,7 +207,9 @@
     <None Include="res\SimpleChat.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\bitmap2.bmp" />
     <Image Include="res\SimpleChat.ico" />
+    <Image Include="res\下载.bmp" />
     <Image Include="res\刷新.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

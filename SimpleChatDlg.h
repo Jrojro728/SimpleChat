@@ -38,4 +38,6 @@ public:
 	CBitmapButton m_Btn1;
 	afx_msg void OnBnClickedButton1();
 	CEdit m_edit1;
+	CEdit m_edit2;
+	CButton m_Btn5;
 };
