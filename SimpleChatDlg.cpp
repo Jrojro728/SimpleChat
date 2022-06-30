@@ -90,6 +90,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -322,4 +323,11 @@ void CSimpleChatDlg::OnBnClickedButton5()
 {
 	AfxMessageBox(code());
 	//system("git pull");
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton6()
+{
+	AfxMessageBox()
+	//system("git push");
 }
