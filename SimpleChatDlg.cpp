@@ -26,6 +26,7 @@ CString code()
 CString new_Line("\n");
 CString FileName(code() + _T("\\聊天记录.txt"));
 CString UserFileName(code() + _T("\\用户信息.txt"));
+bool DevloperMode = false;
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -201,6 +202,11 @@ void CSimpleChatDlg::OnBnClickedButton3()
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
+	if (str == _T("123456789123456789"))
+	{
+		DevloperMode = true;
+		AfxMessageBox(_T("test"));
+	}
 	
 	CStdioFile FileWrite;
 	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
