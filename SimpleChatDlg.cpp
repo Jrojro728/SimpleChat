@@ -307,7 +307,7 @@ void CSimpleChatDlg::OnBnClickedButton5()
 	CString test;
 	test.ReleaseBuffer();
 	GetModuleFileName(NULL, test.GetBufferSetLength(69+1), 69);
+	test.Trim(_T("SimpleChat.exe"));
 	AfxMessageBox(test);
-	test.Trim()
 	//system("git pull");
 }
