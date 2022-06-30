@@ -35,8 +35,6 @@ public:
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedButton5();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -49,7 +47,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-	ON_BN_CLICKED(IDC_BUTTON5, &CAboutDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 
@@ -71,6 +68,7 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT2, m_edit1);
 	DDX_Control(pDX, IDC_EDIT3, m_edit2);
 	DDX_Control(pDX, IDC_BUTTON5, m_Btn5);
+	DDX_Control(pDX, IDC_BUTTON6, m_Btn6);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -80,6 +78,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON3, &CSimpleChatDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()
 
 
@@ -127,6 +126,12 @@ BOOL CSimpleChatDlg::OnInitDialog()
 	hInstance1 = ::AfxGetInstanceHandle();
 	hBitmap1 = ::LoadBitmap(hInstance1, MAKEINTRESOURCE(IDB_BITMAP2));
 	m_Btn5.SetBitmap(hBitmap1);
+
+	HINSTANCE hInstance2;
+	HBITMAP hBitmap2;
+	hInstance2 = ::AfxGetInstanceHandle();
+	hBitmap2 = ::LoadBitmap(hInstance2, MAKEINTRESOURCE(IDB_BITMAP3));
+	m_Btn6.SetBitmap(hBitmap2);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -297,8 +302,12 @@ void CSimpleChatDlg::OnBnClickedButton1()
 	}
 }
 
-
-void CAboutDlg::OnBnClickedButton5()
+void CSimpleChatDlg::OnBnClickedButton5()
 {
-	system("git pull");
+	CString test;
+	test.ReleaseBuffer();
+	GetModuleFileName(NULL, test.GetBufferSetLength(69+1), 69);
+	AfxMessageBox(test);
+	test.Trim()
+	//system("git pull");
 }

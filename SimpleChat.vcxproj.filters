@@ -68,5 +68,11 @@
     <Image Include="res\下载.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\bitmap3.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\上传.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

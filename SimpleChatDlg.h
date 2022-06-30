@@ -40,4 +40,6 @@ public:
 	CEdit m_edit1;
 	CEdit m_edit2;
 	CButton m_Btn5;
+	CButton m_Btn6;
+	afx_msg void OnBnClickedButton5();
 };
