@@ -13,9 +13,19 @@
 #define new DEBUG_NEW
 #endif
 
+CString code()
+{
+	CString path;
+	path.ReleaseBuffer();
+	GetModuleFileName(NULL, path.GetBufferSetLength(250 + 1), 250);
+	path.Trim(_T("SimpleChat.exe"));
+	path.Insert(0, _T("C"));
+	return path;
+}
+
 CString new_Line("\n");
-CString FileName(_T("C:\\聊天记录.txt"));
-CString UserFileName(_T("C:\\用户信息.txt"));
+CString FileName(code() + _T("\\聊天记录.txt"));
+CString UserFileName(code() + _T("\\用户信息.txt"));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -273,7 +283,7 @@ void CSimpleChatDlg::OnBnClickedButton1()
 		FileWrite.SeekToEnd(); //定位到最后
 
 		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-		FileWrite.Write(new_Line.GetBuffer(), 1);
+		/*FileWrite.Write(new_Line.GetBuffer(), 1);*/
 		FileWrite.Close();
 	}
 	{
@@ -304,10 +314,6 @@ void CSimpleChatDlg::OnBnClickedButton1()
 
 void CSimpleChatDlg::OnBnClickedButton5()
 {
-	CString test;
-	test.ReleaseBuffer();
-	GetModuleFileName(NULL, test.GetBufferSetLength(69+1), 69);
-	test.Trim(_T("SimpleChat.exe"));
-	AfxMessageBox(test);
+	AfxMessageBox(code());
 	//system("git pull");
 }
