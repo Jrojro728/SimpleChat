@@ -322,12 +322,12 @@ void CSimpleChatDlg::OnBnClickedButton1()
 void CSimpleChatDlg::OnBnClickedButton5()
 {
 	AfxMessageBox(code());
-	//system("git pull");
+	system("PortableGit-2.37.0/bin/git pull");
 }
 
 
 void CSimpleChatDlg::OnBnClickedButton6()
 {
-	AfxMessageBox()
-	//system("git push");
+	AfxMessageBox(code());
+	system("PortableGit-2.37.0/bin/git push");
 }
