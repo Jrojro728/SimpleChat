@@ -13,19 +13,32 @@
 #define new DEBUG_NEW
 #endif
 
-CString code()
+CString FtpUserName("ftpuser");
+CString FtpUserPassword("123456Jr");
+CFtpConnection *Ftp;
+
+CString AppAtTheDirectory()
 {
 	CString path;
-	path.ReleaseBuffer();
 	GetModuleFileName(NULL, path.GetBufferSetLength(250 + 1), 250);
+	path.ReleaseBuffer();
 	path.Trim(_T("SimpleChat.exe"));
 	path.Insert(0, _T("C"));
 	return path;
 }
 
+void inline GetFtpInternetSession()
+{
+	CString FtpServerUrl("39.108.56.15");
+	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
+	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, FtpUserName, FtpUserPassword, 21, TRUE);
+}
+
 CString new_Line("\n");
-CString FileName(code() + _T("\\聊天记录.txt"));
-CString UserFileName(code() + _T("\\用户信息.txt"));
+CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
+CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
+CString NotConfigureFileName("用户信息.txt");
+CString NotConfigureUserFileName("用户信息.txt");
 bool DevloperMode = false;
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -91,6 +104,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 END_MESSAGE_MAP()
 
 
@@ -144,6 +158,8 @@ BOOL CSimpleChatDlg::OnInitDialog()
 	hInstance2 = ::AfxGetInstanceHandle();
 	hBitmap2 = ::LoadBitmap(hInstance2, MAKEINTRESOURCE(IDB_BITMAP3));
 	m_Btn6.SetBitmap(hBitmap2);
+
+	GetFtpInternetSession();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -203,10 +219,11 @@ void CSimpleChatDlg::OnBnClickedButton3()
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
-	if (str == _T("123456789123456789"))
+	if (str == _T("123456789123456789"))//开发者模式
 	{
 		DevloperMode = true;
 		AfxMessageBox(_T("test"));
+		return;
 	}
 	
 	CStdioFile FileWrite;
@@ -321,13 +338,20 @@ void CSimpleChatDlg::OnBnClickedButton1()
 
 void CSimpleChatDlg::OnBnClickedButton5()
 {
-	AfxMessageBox(code());
-	system("PortableGit-2.37.0/bin/git pull");
+	AfxMessageBox(AppAtTheDirectory());
+   /* GetFtpInternetSession()->GetFile(FileName, FileName, false);*/
 }
 
 
 void CSimpleChatDlg::OnBnClickedButton6()
 {
-	AfxMessageBox(code());
-	system("PortableGit-2.37.0/bin/git push");
+	AfxMessageBox(AppAtTheDirectory());
+	Ftp->PutFile(FileName, NotConfigureFileName);
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton7()
+{
+	CFile::Remove(FileName);
+	CFile::Remove(UserFileName);
 }

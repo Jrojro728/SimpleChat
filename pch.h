@@ -13,5 +13,6 @@
 #include <iostream>
 #include <atlenc.h>
 #include <cstring>
+#include <afxinet.h>
 
 #endif //PCH_H
