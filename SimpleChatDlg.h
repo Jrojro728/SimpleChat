@@ -42,4 +42,6 @@ public:
 	CButton m_Btn5;
 	CButton m_Btn6;
 	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnClickedButton6();
+	afx_msg void OnBnClickedButton7();
 };

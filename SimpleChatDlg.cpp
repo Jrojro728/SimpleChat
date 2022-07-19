@@ -13,9 +13,68 @@
 #define new DEBUG_NEW
 #endif
 
+CString AppAtTheDirectory();
+
+CString FtpUserName("ftpuser");
+CString FtpUserPassword("123456Jr");
+CFtpConnection *Ftp;
+
 CString new_Line("\n");
-CString FileName(_T("C:\\聊天记录.txt"));
-CString UserFileName(_T("C:\\用户信息.txt"));
+CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
+CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
+CString NotConfigureFileName("聊天记录.txt");
+CString NotConfigureUserFileName("用户信息.txt");
+
+bool DevloperMode = false;
+
+CString AppAtTheDirectory()
+{
+	CString path;
+	GetModuleFileName(NULL, path.GetBufferSetLength(250 + 1), 250);
+	path.ReleaseBuffer();
+	path.Trim(_T("SimpleChat.exe"));
+	path.Insert(0, _T("C"));
+	return path;
+}
+
+void inline GetFtpInternetSession()
+{
+	CString FtpServerUrl("192.168.1.106");
+	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
+	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
+}
+
+void FileWrite(CString & WriteFileName, CString & str)
+{
+	CStdioFile FileWrite;
+	if (!FileWrite.Open(WriteFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
+	{
+		AfxMessageBox(_T("打开文件失败!"));
+		return;
+	}
+	DWORD dwFileLen = FileWrite.GetLength();
+	//if (0 == dwFileLen)
+	//{
+	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+	//}
+
+	//开始转换utf8
+	int nSrcLen = (int)wcslen(str);
+	CStringA utf8String(str);
+
+	int nBufLen = (nSrcLen + 1) * 6;
+	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
+
+	buffer[nLen] = 0;
+	utf8String.ReleaseBuffer();
+	FileWrite.SeekToEnd(); //定位到最后
+
+	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
+	FileWrite.Write(new_Line.GetBuffer(), 1);
+	FileWrite.Close();
+}
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -79,6 +138,8 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 END_MESSAGE_MAP()
 
 
@@ -132,6 +193,8 @@ BOOL CSimpleChatDlg::OnInitDialog()
 	hInstance2 = ::AfxGetInstanceHandle();
 	hBitmap2 = ::LoadBitmap(hInstance2, MAKEINTRESOURCE(IDB_BITMAP3));
 	m_Btn6.SetBitmap(hBitmap2);
+
+	GetFtpInternetSession();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -191,35 +254,13 @@ void CSimpleChatDlg::OnBnClickedButton3()
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
-	
-	CStdioFile FileWrite;
-	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
+	if (str == _T("123456789123456789"))//开发者模式
 	{
-		AfxMessageBox(_T("打开文件失败!"));
+		DevloperMode = true;
+		AfxMessageBox(_T("test"));
 		return;
 	}
-	DWORD dwFileLen = FileWrite.GetLength();
-	//if (0 == dwFileLen)
-	//{
-	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
-	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
-	//}
-	
-	//开始转换utf8
-	int nSrcLen = (int)wcslen(str);
-	CStringA utf8String(str);
-
-	int nBufLen = (nSrcLen + 1) * 6;
-	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
-
-	buffer[nLen] = 0;
-	utf8String.ReleaseBuffer();
-	FileWrite.SeekToEnd(); //定位到最后
-
-	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 1);
-	FileWrite.Close();
+	FileWrite(FileName ,str);
 }
 
 void CSimpleChatDlg::OnBnClickedButton4()
@@ -251,63 +292,29 @@ void CSimpleChatDlg::OnBnClickedButton1()
 	m_edit1.GetWindowText(UserName);
 	m_edit2.GetWindowText(PassWord);
 
-	CStdioFile FileWrite;
-	{
-		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
-		{
-			AfxMessageBox(_T("打开文件失败!"));
-			return;
-		}
-		DWORD dwFileLen = FileWrite.GetLength();
-
-		//开始转换utf8
-		int nSrcLen = (int)wcslen(UserName);
-		CStringA utf8String(UserName);
-
-		int nBufLen = (nSrcLen + 1) * 6;
-		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-		int nLen = AtlUnicodeToUTF8(UserName, nSrcLen, buffer, nBufLen);
-
-		buffer[nLen] = 0;
-		utf8String.ReleaseBuffer();
-		FileWrite.SeekToEnd(); //定位到最后
-
-		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-		FileWrite.Write(new_Line.GetBuffer(), 1);
-		FileWrite.Close();
-	}
-	{
-		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
-		{
-			AfxMessageBox(_T("打开文件失败!"));
-			return;
-		}
-		DWORD dwFileLen = FileWrite.GetLength();
-
-		//开始转换utf8
-		int nSrcLen = (int)wcslen(PassWord);
-		CStringA utf8String(PassWord);
-
-		int nBufLen = (nSrcLen + 1) * 6;
-		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-		int nLen = AtlUnicodeToUTF8(PassWord, nSrcLen, buffer, nBufLen);
-
-		buffer[nLen] = 0;
-		utf8String.ReleaseBuffer();
-		FileWrite.SeekToEnd(); //定位到最后
-
-		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-		FileWrite.Write(new_Line.GetBuffer(), 1);
-		FileWrite.Close();
-	}
+	FileWrite(UserFileName, UserName);
+	FileWrite(UserFileName, PassWord);
 }
 
 void CSimpleChatDlg::OnBnClickedButton5()
 {
-	CString test;
-	test.ReleaseBuffer();
-	GetModuleFileName(NULL, test.GetBufferSetLength(69+1), 69);
-	AfxMessageBox(test);
-	test.Trim()
-	//system("git pull");
+	/*AfxMessageBox(AppAtTheDirectory());*/
+    Ftp->GetFile(NotConfigureFileName, FileName, false);
+	Ftp->GetFile(NotConfigureUserFileName, UserFileName, false);
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton6()
+{
+	/*AfxMessageBox(AppAtTheDirectory());*/
+	Ftp->PutFile(FileName, NotConfigureFileName);
+	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton7()
+{
+	CFile::Remove(FileName);
+	CFile::Remove(UserFileName);
+	OnBnClickedButton5();
 }
