@@ -13,9 +13,19 @@
 #define new DEBUG_NEW
 #endif
 
+CString AppAtTheDirectory();
+
 CString FtpUserName("ftpuser");
 CString FtpUserPassword("123456Jr");
 CFtpConnection *Ftp;
+
+CString new_Line("\n");
+CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
+CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
+CString NotConfigureFileName("聊天记录.txt");
+CString NotConfigureUserFileName("用户信息.txt");
+
+bool DevloperMode = false;
 
 CString AppAtTheDirectory()
 {
@@ -29,17 +39,42 @@ CString AppAtTheDirectory()
 
 void inline GetFtpInternetSession()
 {
-	CString FtpServerUrl("39.108.56.15");
+	CString FtpServerUrl("192.168.1.106");
 	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
-	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, FtpUserName, FtpUserPassword, 21, TRUE);
+	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
 }
 
-CString new_Line("\n");
-CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
-CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
-CString NotConfigureFileName("用户信息.txt");
-CString NotConfigureUserFileName("用户信息.txt");
-bool DevloperMode = false;
+void FileWrite(CString & WriteFileName, CString & str)
+{
+	CStdioFile FileWrite;
+	if (!FileWrite.Open(WriteFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
+	{
+		AfxMessageBox(_T("打开文件失败!"));
+		return;
+	}
+	DWORD dwFileLen = FileWrite.GetLength();
+	//if (0 == dwFileLen)
+	//{
+	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
+	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
+	//}
+
+	//开始转换utf8
+	int nSrcLen = (int)wcslen(str);
+	CStringA utf8String(str);
+
+	int nBufLen = (nSrcLen + 1) * 6;
+	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
+	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
+
+	buffer[nLen] = 0;
+	utf8String.ReleaseBuffer();
+	FileWrite.SeekToEnd(); //定位到最后
+
+	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
+	FileWrite.Write(new_Line.GetBuffer(), 1);
+	FileWrite.Close();
+}
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -225,35 +260,7 @@ void CSimpleChatDlg::OnBnClickedButton3()
 		AfxMessageBox(_T("test"));
 		return;
 	}
-	
-	CStdioFile FileWrite;
-	if (!FileWrite.Open(FileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
-	{
-		AfxMessageBox(_T("打开文件失败!"));
-		return;
-	}
-	DWORD dwFileLen = FileWrite.GetLength();
-	//if (0 == dwFileLen)
-	//{
-	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
-	//	FileWrite.Write(LeadBytes, sizeof(LeadBytes));
-	//}
-	
-	//开始转换utf8
-	int nSrcLen = (int)wcslen(str);
-	CStringA utf8String(str);
-
-	int nBufLen = (nSrcLen + 1) * 6;
-	LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-	int nLen = AtlUnicodeToUTF8(str, nSrcLen, buffer, nBufLen);
-
-	buffer[nLen] = 0;
-	utf8String.ReleaseBuffer();
-	FileWrite.SeekToEnd(); //定位到最后
-
-	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 1);
-	FileWrite.Close();
+	FileWrite(FileName ,str);
 }
 
 void CSimpleChatDlg::OnBnClickedButton4()
@@ -285,61 +292,15 @@ void CSimpleChatDlg::OnBnClickedButton1()
 	m_edit1.GetWindowText(UserName);
 	m_edit2.GetWindowText(PassWord);
 
-	CStdioFile FileWrite;
-	{
-		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
-		{
-			AfxMessageBox(_T("打开文件失败!"));
-			return;
-		}
-		DWORD dwFileLen = FileWrite.GetLength();
-
-		//开始转换utf8
-		int nSrcLen = (int)wcslen(UserName);
-		CStringA utf8String(UserName);
-
-		int nBufLen = (nSrcLen + 1) * 6;
-		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-		int nLen = AtlUnicodeToUTF8(UserName, nSrcLen, buffer, nBufLen);
-
-		buffer[nLen] = 0;
-		utf8String.ReleaseBuffer();
-		FileWrite.SeekToEnd(); //定位到最后
-
-		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-		/*FileWrite.Write(new_Line.GetBuffer(), 1);*/
-		FileWrite.Close();
-	}
-	{
-		if (!FileWrite.Open(UserFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
-		{
-			AfxMessageBox(_T("打开文件失败!"));
-			return;
-		}
-		DWORD dwFileLen = FileWrite.GetLength();
-
-		//开始转换utf8
-		int nSrcLen = (int)wcslen(PassWord);
-		CStringA utf8String(PassWord);
-
-		int nBufLen = (nSrcLen + 1) * 6;
-		LPSTR buffer = utf8String.GetBufferSetLength(nBufLen);
-		int nLen = AtlUnicodeToUTF8(PassWord, nSrcLen, buffer, nBufLen);
-
-		buffer[nLen] = 0;
-		utf8String.ReleaseBuffer();
-		FileWrite.SeekToEnd(); //定位到最后
-
-		FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-		FileWrite.Write(new_Line.GetBuffer(), 1);
-		FileWrite.Close();
-	}
+	FileWrite(UserFileName, UserName);
+	FileWrite(UserFileName, PassWord);
 }
 
 void CSimpleChatDlg::OnBnClickedButton5()
 {
 	AfxMessageBox(AppAtTheDirectory());
-   /* GetFtpInternetSession()->GetFile(FileName, FileName, false);*/
+    Ftp->GetFile(NotConfigureFileName, NotConfigureFileName, false);
+	Ftp->GetFile(NotConfigureUserFileName, NotConfigureUserFileName, false);
 }
 
 
@@ -347,6 +308,7 @@ void CSimpleChatDlg::OnBnClickedButton6()
 {
 	AfxMessageBox(AppAtTheDirectory());
 	Ftp->PutFile(FileName, NotConfigureFileName);
+	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
 }
 
 
