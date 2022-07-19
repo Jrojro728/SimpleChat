@@ -298,15 +298,15 @@ void CSimpleChatDlg::OnBnClickedButton1()
 
 void CSimpleChatDlg::OnBnClickedButton5()
 {
-	AfxMessageBox(AppAtTheDirectory());
-    Ftp->GetFile(NotConfigureFileName, NotConfigureFileName, false);
-	Ftp->GetFile(NotConfigureUserFileName, NotConfigureUserFileName, false);
+	/*AfxMessageBox(AppAtTheDirectory());*/
+    Ftp->GetFile(NotConfigureFileName, FileName, false);
+	Ftp->GetFile(NotConfigureUserFileName, UserFileName, false);
 }
 
 
 void CSimpleChatDlg::OnBnClickedButton6()
 {
-	AfxMessageBox(AppAtTheDirectory());
+	/*AfxMessageBox(AppAtTheDirectory());*/
 	Ftp->PutFile(FileName, NotConfigureFileName);
 	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
 }
@@ -316,4 +316,5 @@ void CSimpleChatDlg::OnBnClickedButton7()
 {
 	CFile::Remove(FileName);
 	CFile::Remove(UserFileName);
+	OnBnClickedButton5();
 }
