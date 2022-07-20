@@ -27,6 +27,12 @@ CString NotConfigureUserFileName("用户信息.txt");
 
 bool DevloperMode = false;
 
+struct User
+{
+	CString UserName;
+	CString PassWord;
+}user;
+
 CString AppAtTheDirectory()
 {
 	CString path;
@@ -44,7 +50,7 @@ void inline GetFtpInternetSession()
 	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
 }
 
-void FileWrite(CString & WriteFileName, CString & str)
+void FileWrite(IN CString & WriteFileName, IN CString & str)
 {
 	CStdioFile FileWrite;
 	if (!FileWrite.Open(WriteFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
@@ -74,6 +80,24 @@ void FileWrite(CString & WriteFileName, CString & str)
 	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
 	FileWrite.Write(new_Line.GetBuffer(), 1);
 	FileWrite.Close();
+}
+
+void FileRead(IN CString & ReadFileName, OUT CString& str)
+{
+	CStdioFile fileRead;
+	if (!fileRead.Open(ReadFileName, CFile::modeRead | CFile::typeText))
+	{
+		AfxMessageBox(_T("文件无法打开!\n"));
+		return;
+	}
+
+	DWORD len = fileRead.GetLength();
+	char* fileData = new char[len + 1];
+	fileData[len] = 0;
+	fileRead.Read(fileData, len);
+
+	str = CA2W(fileData, CP_UTF8);
+	fileRead.Close();
 }
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -140,6 +164,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
+	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -257,7 +282,6 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	if (str == _T("123456789123456789"))//开发者模式
 	{
 		DevloperMode = true;
-		AfxMessageBox(_T("test"));
 		return;
 	}
 	FileWrite(FileName ,str);
@@ -265,23 +289,9 @@ void CSimpleChatDlg::OnBnClickedButton3()
 
 void CSimpleChatDlg::OnBnClickedButton4()
 {
-	CStdioFile fileRead;
-	if (!fileRead.Open(FileName, CFile::modeRead | CFile::typeText))
-	{
-		AfxMessageBox(_T("文件无法打开!\n"));
-		return;
-	}
-	
-	DWORD len = fileRead.GetLength();
-	char* fileData = new char[len + 1];
-	fileData[len] = 0;
-	fileRead.Read(fileData, len);
-
 	CString str;
-	str = CA2W(fileData, CP_UTF8);
+	FileRead(FileName , str);
 	GetDlgItem(IDC_STATIC0)->SetWindowText(str);
-
-	fileRead.Close();
 }
 
 void CSimpleChatDlg::OnBnClickedButton1()
@@ -317,4 +327,27 @@ void CSimpleChatDlg::OnBnClickedButton7()
 	CFile::Remove(FileName);
 	CFile::Remove(UserFileName);
 	OnBnClickedButton5();
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton2()
+{
+	CString ReadStr;
+	CString TestUserName;
+	CString TestPassWord;
+
+	m_edit1.GetWindowText(TestUserName);
+	m_edit2.GetWindowText(TestPassWord);
+
+	FileRead(UserFileName, ReadStr);
+	if (ReadStr.Find(TestUserName) >= 0 && ReadStr.Find(TestPassWord) >= 0)
+	{
+		user.UserName = TestUserName;
+		user.PassWord = TestPassWord;
+	}
+	else
+	{
+		AfxMessageBox(_T("登录错误:用户名或密码错误!"));
+		return;
+	}
 }
