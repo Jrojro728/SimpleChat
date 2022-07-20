@@ -165,6 +165,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON8, &CSimpleChatDlg::OnBnClickedButton8)
 END_MESSAGE_MAP()
 
 
@@ -350,4 +351,9 @@ void CSimpleChatDlg::OnBnClickedButton2()
 		AfxMessageBox(_T("登录错误:用户名或密码错误!"));
 		return;
 	}
+}
+
+void CSimpleChatDlg::OnBnClickedButton8()
+{
+	CDialogEx::OnOK();
 }
