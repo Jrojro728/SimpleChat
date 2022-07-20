@@ -100,6 +100,15 @@ void FileRead(IN CString & ReadFileName, OUT CString& str)
 	fileRead.Close();
 }
 
+HBITMAP MakeBitmapIcon(int BaseIDBBitmap)
+{
+	HINSTANCE hInstance;
+	HBITMAP hBitmap;
+	hInstance = ::AfxGetInstanceHandle();
+	hBitmap = ::LoadBitmap(hInstance, MAKEINTRESOURCE(BaseIDBBitmap));
+	return hBitmap;
+}
+
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -202,23 +211,10 @@ BOOL CSimpleChatDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 
-	HINSTANCE hInstance0;
-	HBITMAP hBitmap0;
-	hInstance0 = ::AfxGetInstanceHandle();
-	hBitmap0 = ::LoadBitmap(hInstance0, MAKEINTRESOURCE(IDB_BITMAP1));
-	m_Btn1.SetBitmap(hBitmap0);
-
-	HINSTANCE hInstance1;
-	HBITMAP hBitmap1;
-	hInstance1 = ::AfxGetInstanceHandle();
-	hBitmap1 = ::LoadBitmap(hInstance1, MAKEINTRESOURCE(IDB_BITMAP2));
-	m_Btn5.SetBitmap(hBitmap1);
-
-	HINSTANCE hInstance2;
-	HBITMAP hBitmap2;
-	hInstance2 = ::AfxGetInstanceHandle();
-	hBitmap2 = ::LoadBitmap(hInstance2, MAKEINTRESOURCE(IDB_BITMAP3));
-	m_Btn6.SetBitmap(hBitmap2);
+	
+	m_Btn1.SetBitmap(MakeBitmapIcon(IDB_BITMAP1));
+	m_Btn5.SetBitmap(MakeBitmapIcon(IDB_BITMAP2));
+	m_Btn6.SetBitmap(MakeBitmapIcon(IDB_BITMAP3));
 
 	GetFtpInternetSession();
 
@@ -276,7 +272,7 @@ HCURSOR CSimpleChatDlg::OnQueryDragIcon()
 
 
 
-void CSimpleChatDlg::OnBnClickedButton3()
+void CSimpleChatDlg::OnBnClickedButton3() //写入
 {
 	CString str; //定义一个变量str
 	m_edit.GetWindowText(str); //获取编辑框文本到str
@@ -288,14 +284,14 @@ void CSimpleChatDlg::OnBnClickedButton3()
 	FileWrite(FileName ,str);
 }
 
-void CSimpleChatDlg::OnBnClickedButton4()
+void CSimpleChatDlg::OnBnClickedButton4() //读取
 {
 	CString str;
 	FileRead(FileName , str);
 	GetDlgItem(IDC_STATIC0)->SetWindowText(str);
 }
 
-void CSimpleChatDlg::OnBnClickedButton1()
+void CSimpleChatDlg::OnBnClickedButton1() //写入
 {
 	CString UserName;
 	CString PassWord;
@@ -307,7 +303,7 @@ void CSimpleChatDlg::OnBnClickedButton1()
 	FileWrite(UserFileName, PassWord);
 }
 
-void CSimpleChatDlg::OnBnClickedButton5()
+void CSimpleChatDlg::OnBnClickedButton5() //从服务器下载文件
 {
 	/*AfxMessageBox(AppAtTheDirectory());*/
     Ftp->GetFile(NotConfigureFileName, FileName, false);
@@ -315,7 +311,7 @@ void CSimpleChatDlg::OnBnClickedButton5()
 }
 
 
-void CSimpleChatDlg::OnBnClickedButton6()
+void CSimpleChatDlg::OnBnClickedButton6() //往服务器上传文件
 {
 	/*AfxMessageBox(AppAtTheDirectory());*/
 	Ftp->PutFile(FileName, NotConfigureFileName);
@@ -323,7 +319,7 @@ void CSimpleChatDlg::OnBnClickedButton6()
 }
 
 
-void CSimpleChatDlg::OnBnClickedButton7()
+void CSimpleChatDlg::OnBnClickedButton7() //重置
 {
 	CFile::Remove(FileName);
 	CFile::Remove(UserFileName);
@@ -331,7 +327,7 @@ void CSimpleChatDlg::OnBnClickedButton7()
 }
 
 
-void CSimpleChatDlg::OnBnClickedButton2()
+void CSimpleChatDlg::OnBnClickedButton2() //读取
 {
 	CString ReadStr;
 	CString TestUserName;
