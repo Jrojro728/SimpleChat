@@ -171,7 +171,6 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
-	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON8, &CSimpleChatDlg::OnBnClickedButton8)
@@ -282,6 +281,9 @@ void CSimpleChatDlg::OnBnClickedButton3() //写入
 		return;
 	}
 	FileWrite(FileName ,str);
+
+	Ftp->PutFile(FileName, NotConfigureFileName);
+	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
 }
 
 void CSimpleChatDlg::OnBnClickedButton4() //读取
@@ -309,15 +311,6 @@ void CSimpleChatDlg::OnBnClickedButton5() //从服务器下载文件
     Ftp->GetFile(NotConfigureFileName, FileName, false);
 	Ftp->GetFile(NotConfigureUserFileName, UserFileName, false);
 }
-
-
-void CSimpleChatDlg::OnBnClickedButton6() //往服务器上传文件
-{
-	/*AfxMessageBox(AppAtTheDirectory());*/
-	Ftp->PutFile(FileName, NotConfigureFileName);
-	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
-}
-
 
 void CSimpleChatDlg::OnBnClickedButton7() //重置
 {
