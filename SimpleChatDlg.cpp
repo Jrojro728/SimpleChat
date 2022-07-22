@@ -101,7 +101,7 @@ void FileRead(IN CString & ReadFileName, OUT CString& str)
 	fileRead.Close();
 }
 
-HBITMAP MakeBitmapIcon(int BaseIDBBitmap)
+HBITMAP MakeBitmapIcon(IN int BaseIDBBitmap)
 {
 	HINSTANCE hInstance;
 	HBITMAP hBitmap;
