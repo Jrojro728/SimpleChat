@@ -19,7 +19,7 @@ CString FtpUserName("ftpuser");
 CString FtpUserPassword("123456Jr");
 CFtpConnection *Ftp;
 
-CString new_Line("\n");
+CString new_Line("\r\n");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
@@ -31,6 +31,7 @@ struct User
 {
 	CString UserName;
 	CString PassWord;
+	bool IsSetting = FALSE;
 }user;
 
 CString AppAtTheDirectory()
@@ -45,7 +46,7 @@ CString AppAtTheDirectory()
 
 void inline GetFtpInternetSession()
 {
-	CString FtpServerUrl("192.168.1.106");
+	CString FtpServerUrl("172.26.208.1");
 	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
 	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
 }
@@ -78,7 +79,7 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 	FileWrite.SeekToEnd(); //定位到最后
 
 	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 1);
+	FileWrite.Write(new_Line.GetBuffer(), 2);
 	FileWrite.Close();
 }
 
@@ -160,7 +161,6 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT2, m_edit1);
 	DDX_Control(pDX, IDC_EDIT3, m_edit2);
 	DDX_Control(pDX, IDC_BUTTON5, m_Btn5);
-	DDX_Control(pDX, IDC_BUTTON6, m_Btn6);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -171,7 +171,6 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CSimpleChatDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSimpleChatDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON5, &CSimpleChatDlg::OnBnClickedButton5)
-	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON8, &CSimpleChatDlg::OnBnClickedButton8)
@@ -214,7 +213,6 @@ BOOL CSimpleChatDlg::OnInitDialog()
 	
 	m_Btn1.SetBitmap(MakeBitmapIcon(IDB_BITMAP1));
 	m_Btn5.SetBitmap(MakeBitmapIcon(IDB_BITMAP2));
-	m_Btn6.SetBitmap(MakeBitmapIcon(IDB_BITMAP3));
 
 	GetFtpInternetSession();
 
@@ -281,7 +279,12 @@ void CSimpleChatDlg::OnBnClickedButton3() //写入
 		DevloperMode = true;
 		return;
 	}
+	if(user.IsSetting = TRUE)
+		str.Insert(0, user.UserName + L": ");
 	FileWrite(FileName ,str);
+
+	Ftp->PutFile(FileName, NotConfigureFileName);
+	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
 }
 
 void CSimpleChatDlg::OnBnClickedButton4() //读取
@@ -310,15 +313,6 @@ void CSimpleChatDlg::OnBnClickedButton5() //从服务器下载文件
 	Ftp->GetFile(NotConfigureUserFileName, UserFileName, false);
 }
 
-
-void CSimpleChatDlg::OnBnClickedButton6() //往服务器上传文件
-{
-	/*AfxMessageBox(AppAtTheDirectory());*/
-	Ftp->PutFile(FileName, NotConfigureFileName);
-	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
-}
-
-
 void CSimpleChatDlg::OnBnClickedButton7() //重置
 {
 	CFile::Remove(FileName);
@@ -341,6 +335,7 @@ void CSimpleChatDlg::OnBnClickedButton2() //读取
 	{
 		user.UserName = TestUserName;
 		user.PassWord = TestPassWord;
+		user.IsSetting = TRUE;
 	}
 	else
 	{
