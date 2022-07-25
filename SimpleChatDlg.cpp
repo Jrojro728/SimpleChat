@@ -15,8 +15,6 @@
 
 CString AppAtTheDirectory();
 
-CString FtpUserName("ftpuser");
-CString FtpUserPassword("123456Jr");
 CFtpConnection *Ftp;
 
 CString new_Line("\n");
