@@ -14,6 +14,8 @@
 #endif
 
 CString AppAtTheDirectory();
+DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash);
+DWORD UseHash(IN CString Str, OUT CString &HashStr);
 
 CFtpConnection *Ftp;
 
@@ -22,6 +24,7 @@ CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
 CString NotConfigureUserFileName("用户信息.txt");
+CString TempHashStr, TempHashStr2;
 
 bool DevloperMode = false;
 
@@ -81,6 +84,12 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 	FileWrite.Close();
 }
 
+void FileWriteWithHash(IN CString& WriteFileName, IN CString& str)
+{
+	UseHash(str, TempHashStr);
+	FileWrite(WriteFileName, TempHashStr);
+}
+
 void FileRead(IN CString & ReadFileName, OUT CString& str)
 {
 	CStdioFile fileRead;
@@ -106,6 +115,69 @@ HBITMAP MakeBitmapIcon(IN int BaseIDBBitmap)
 	hInstance = ::AfxGetInstanceHandle();
 	hBitmap = ::LoadBitmap(hInstance, MAKEINTRESOURCE(BaseIDBBitmap));
 	return hBitmap;
+}
+
+DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
+{
+
+	DWORD dwReturn = 0;
+	HCRYPTPROV hProv;
+	if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+		return (dwReturn = GetLastError());
+
+	HCRYPTHASH hHash;
+	//Alg Id:CALG_MD5,CALG_SHA
+	if (!CryptCreateHash(hProv, algId, 0, 0, &hHash))
+	{
+		dwReturn = GetLastError();
+		CryptReleaseContext(hProv, 0);
+		return dwReturn;
+	}
+
+	if (!CryptHashData(hHash, pbData, dwDataLen, 0))
+	{
+		dwReturn = GetLastError();
+		CryptDestroyHash(hHash);
+		CryptReleaseContext(hProv, 0);
+		return dwReturn;
+	}
+
+	DWORD dwSize;
+	DWORD dwLen = sizeof(dwSize);
+	CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)(&dwSize), &dwLen, 0);
+
+	BYTE* pHash = new BYTE[dwSize];
+	dwLen = dwSize;
+	CryptGetHashParam(hHash, HP_HASHVAL, pHash, &dwLen, 0);
+
+	lstrcpy(pszHash, _T(""));
+	TCHAR szTemp[3];
+	for (DWORD i = 0; i < dwLen; ++i)
+	{
+		//wsprintf(szTemp, _T("%X%X"), pHash[i] >> 4, pHash[i] & 0xf);
+		wsprintf(szTemp, L"%02X", pHash[i]);
+		lstrcat(pszHash, szTemp);	
+	}
+	delete[] pHash;
+
+	CryptDestroyHash(hHash);
+	CryptReleaseContext(hProv, 0);
+	return dwReturn;
+}
+
+DWORD UseHash(IN CString Str, OUT CString & HashStr)
+{
+	int StrSize{ ((int)wcslen(Str) * 6) + 1 };
+	BYTE* StrByteBuffer = new BYTE[StrSize];
+	char* StrCharBuffer = new char[StrSize];
+	CString FinHashStr;
+	
+	WideCharToMultiByte(CP_ACP, 0, Str.GetBuffer(Str.GetLength()), -1, StrCharBuffer, NULL, NULL, NULL);
+	memcpy(StrByteBuffer, StrCharBuffer, StrSize);
+	DWORD status = GetHash(StrByteBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
+
+	HashStr = FinHashStr;
+	return status;
 }
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -277,7 +349,7 @@ void CSimpleChatDlg::OnBnClickedButton3() //写入
 		DevloperMode = true;
 		return;
 	}
-	if(user.IsSetting = TRUE)
+	if(user.IsSetting == TRUE)
 		str.Insert(0, user.UserName + L": ");
 	FileWrite(FileName ,str);
 
@@ -300,8 +372,8 @@ void CSimpleChatDlg::OnBnClickedButton1() //写入
 	m_edit1.GetWindowText(UserName);
 	m_edit2.GetWindowText(PassWord);
 
-	FileWrite(UserFileName, UserName);
-	FileWrite(UserFileName, PassWord);
+	FileWriteWithHash(UserFileName, UserName);
+	FileWriteWithHash(UserFileName, PassWord);
 }
 
 void CSimpleChatDlg::OnBnClickedButton5() //从服务器下载文件
@@ -328,8 +400,11 @@ void CSimpleChatDlg::OnBnClickedButton2() //读取
 	m_edit1.GetWindowText(TestUserName);
 	m_edit2.GetWindowText(TestPassWord);
 
+	UseHash(TestUserName, TempHashStr);
+	UseHash(TestUserName, TempHashStr2);
+
 	FileRead(UserFileName, ReadStr);
-	if (ReadStr.Find(TestUserName) >= 0 && ReadStr.Find(TestPassWord) >= 0)
+	if (ReadStr.Find(TempHashStr) >= 0 && ReadStr.Find(TempHashStr2) >= 0)
 	{
 		user.UserName = TestUserName;
 		user.PassWord = TestPassWord;

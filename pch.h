@@ -14,5 +14,7 @@
 #include <atlenc.h>
 #include <cstring>
 #include <afxinet.h>
+#include <tchar.h>
+#include <wincrypt.h>
 
 #endif //PCH_H
