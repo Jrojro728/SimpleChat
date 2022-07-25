@@ -19,7 +19,7 @@ CString FtpUserName("ftpuser");
 CString FtpUserPassword("123456Jr");
 CFtpConnection *Ftp;
 
-CString new_Line("\r\n");
+CString new_Line("\n");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
@@ -46,7 +46,7 @@ CString AppAtTheDirectory()
 
 void inline GetFtpInternetSession()
 {
-	CString FtpServerUrl("172.26.208.1");
+	CString FtpServerUrl("47.107.52.72");
 	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
 	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
 }
@@ -79,7 +79,7 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 	FileWrite.SeekToEnd(); //定位到最后
 
 	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 2);
+	FileWrite.Write(new_Line.GetBuffer(), 1);
 	FileWrite.Close();
 }
 
