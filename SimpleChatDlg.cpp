@@ -121,7 +121,6 @@ HBITMAP MakeBitmapIcon(IN int BaseIDBBitmap)
 
 DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
 {
-
 	DWORD dwReturn = 0;
 	HCRYPTPROV hProv;
 	if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
@@ -144,7 +143,7 @@ DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
 		return dwReturn;
 	}
 
-	DWORD dwSize = 0;
+	DWORD dwSize;
 	DWORD dwLen = sizeof(dwSize);
 	CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)(&dwSize), &dwLen, 0);
 
@@ -158,22 +157,22 @@ DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
 	{
 		//wsprintf(szTemp, _T("%X%X"), pHash[i] >> 4, pHash[i] & 0xf);
 		wsprintf(szTemp, L"%02X", pHash[i]);
-		lstrcat(pszHash, szTemp);	
+		lstrcat(pszHash, szTemp);
 	}
 	delete[] pHash;
+
+	CryptDestroyHash(hHash);
+	CryptReleaseContext(hProv, 0);
 	return dwReturn;
 }
 
 CString UseHash(IN CString Str)
 {
-	int StrSize{ ((int)wcslen(Str) * 4) + 1 };
-	BYTE* StrByteBuffer = new BYTE[StrSize];
-	char* StrCharBuffer = new char[StrSize];
+	const int StrSize{ (int)wcslen(Str) };
+	TCHAR * StrTCharBuffer = new TCHAR[StrSize];
+	StrTCharBuffer = Str.GetBufferSetLength(StrSize);
 	CString FinHashStr;
-	
-	WideCharToMultiByte(CP_ACP, 0, Str.GetBuffer(Str.GetLength()), -1, StrCharBuffer, NULL, NULL, NULL);
-	memcpy(StrByteBuffer, StrCharBuffer, StrSize);
-	GetHash(StrByteBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
+	GetHash((BYTE *)StrTCharBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
 	
 	return FinHashStr;
 }
@@ -399,7 +398,7 @@ void CSimpleChatDlg::OnBnClickedButton2() //读取
 	m_edit2.GetWindowText(TestPassWord);
 	
 	FileRead(UserFileName, ReadStr);
-	if (ReadStr.Find(UseHash(TestUserName)) >= 0 && ReadStr.Find(UseHash(TestPassWord)) >= 0)
+	if (ReadStr.Find(UseHash(TestPassWord)) >= 0)
 	{
 		user.UserName = TestUserName;
 		user.PassWord = TestPassWord;
