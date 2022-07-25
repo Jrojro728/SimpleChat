@@ -20,6 +20,7 @@ DWORD UseHash(IN CString Str, OUT CString &HashStr);
 CFtpConnection *Ftp;
 
 CString new_Line("\n");
+CString Version("-v1.0.1");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
@@ -40,8 +41,11 @@ CString AppAtTheDirectory()
 	CString path;
 	GetModuleFileName(NULL, path.GetBufferSetLength(250 + 1), 250);
 	path.ReleaseBuffer();
-	path.Trim(_T("SimpleChat.exe"));
+	path.Trim((_T("SimpleChat.exe") + Version));
 	path.Insert(0, _T("C"));
+#ifdef DEBUG
+	AfxMessageBox(path);
+#endif // DEBUG
 	return path;
 }
 
