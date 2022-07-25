@@ -15,7 +15,7 @@
 
 CString AppAtTheDirectory();
 DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash);
-DWORD UseHash(IN CString Str, OUT CString &HashStr);
+CString UseHash(IN CString Str);
 
 CFtpConnection *Ftp;
 
@@ -25,7 +25,6 @@ CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
 CString NotConfigureUserFileName("用户信息.txt");
-CString TempHashStr, TempHashStr2;
 
 bool DevloperMode = false;
 
@@ -90,8 +89,7 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 
 void FileWriteWithHash(IN CString& WriteFileName, IN CString& str)
 {
-	UseHash(str, TempHashStr);
-	FileWrite(WriteFileName, TempHashStr);
+	FileWrite(WriteFileName, UseHash(str));
 }
 
 void FileRead(IN CString & ReadFileName, OUT CString& str)
@@ -146,7 +144,7 @@ DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
 		return dwReturn;
 	}
 
-	DWORD dwSize;
+	DWORD dwSize = 0;
 	DWORD dwLen = sizeof(dwSize);
 	CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)(&dwSize), &dwLen, 0);
 
@@ -163,25 +161,21 @@ DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
 		lstrcat(pszHash, szTemp);	
 	}
 	delete[] pHash;
-
-	CryptDestroyHash(hHash);
-	CryptReleaseContext(hProv, 0);
 	return dwReturn;
 }
 
-DWORD UseHash(IN CString Str, OUT CString & HashStr)
+CString UseHash(IN CString Str)
 {
-	int StrSize{ ((int)wcslen(Str) * 6) + 1 };
+	int StrSize{ ((int)wcslen(Str) * 4) + 1 };
 	BYTE* StrByteBuffer = new BYTE[StrSize];
 	char* StrCharBuffer = new char[StrSize];
 	CString FinHashStr;
 	
 	WideCharToMultiByte(CP_ACP, 0, Str.GetBuffer(Str.GetLength()), -1, StrCharBuffer, NULL, NULL, NULL);
 	memcpy(StrByteBuffer, StrCharBuffer, StrSize);
-	DWORD status = GetHash(StrByteBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
-
-	HashStr = FinHashStr;
-	return status;
+	GetHash(StrByteBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
+	
+	return FinHashStr;
 }
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -403,12 +397,9 @@ void CSimpleChatDlg::OnBnClickedButton2() //读取
 
 	m_edit1.GetWindowText(TestUserName);
 	m_edit2.GetWindowText(TestPassWord);
-
-	UseHash(TestUserName, TempHashStr);
-	UseHash(TestUserName, TempHashStr2);
-
+	
 	FileRead(UserFileName, ReadStr);
-	if (ReadStr.Find(TempHashStr) >= 0 && ReadStr.Find(TempHashStr2) >= 0)
+	if (ReadStr.Find(UseHash(TestUserName)) >= 0 && ReadStr.Find(UseHash(TestPassWord)) >= 0)
 	{
 		user.UserName = TestUserName;
 		user.PassWord = TestPassWord;
