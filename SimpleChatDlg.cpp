@@ -20,7 +20,7 @@ DWORD UseHash(IN CString Str, OUT CString &HashStr);
 CFtpConnection *Ftp;
 
 CString new_Line("\n");
-CString Version("-v1.0.1");
+CString Version("-v1.0.1-fix");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
