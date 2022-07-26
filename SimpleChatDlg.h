@@ -45,4 +45,7 @@ public:
 	afx_msg void OnBnClickedButton7();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton8();
+	CEdit mEdit_4;
+	CEdit mEdit_5; 
+	afx_msg void OnBnClickedButton6();
 };

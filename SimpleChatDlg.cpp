@@ -20,13 +20,14 @@ CString UseHash(IN CString Str);
 CFtpConnection *Ftp;
 
 CString new_Line("\n");
-CString Version("-v1.0.2");
+CString Version("-v1.0.3");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
 CString NotConfigureUserFileName("用户信息.txt");
 
 bool DevloperMode = false;
+bool HasUploadFileInServerName = false;
 
 struct User
 {
@@ -228,6 +229,8 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT2, m_edit1);
 	DDX_Control(pDX, IDC_EDIT3, m_edit2);
 	DDX_Control(pDX, IDC_BUTTON5, m_Btn5);
+	DDX_Control(pDX, IDC_EDIT4, mEdit_4);
+	DDX_Control(pDX, IDC_EDIT5, mEdit_5);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -241,6 +244,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON7, &CSimpleChatDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON8, &CSimpleChatDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
 END_MESSAGE_MAP()
 
 
@@ -414,4 +418,18 @@ void CSimpleChatDlg::OnBnClickedButton2() //读取
 void CSimpleChatDlg::OnBnClickedButton8()
 {
 	CDialogEx::OnOK();
+}
+
+void CSimpleChatDlg::OnBnClickedButton6()
+{
+	CString UserUploadFileName;
+	CString UserUploadFileInServerName;
+
+	mEdit_4.GetWindowText(UserUploadFileName);
+	mEdit_5.GetWindowText(UserUploadFileInServerName);
+
+	if (UserUploadFileInServerName != _T("")) {
+		HasUploadFileInServerName = true;
+		Ftp->PutFile(UserUploadFileName, _T("UserUploadFile\\") + UserUploadFileInServerName);
+	}
 }
