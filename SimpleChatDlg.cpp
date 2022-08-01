@@ -20,14 +20,18 @@ CString UseHash(IN CString Str);
 CFtpConnection *Ftp;
 
 CString new_Line("\n");
-CString Version("-v1.0.3");
+CString Version("-v1.0.4");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
+CString UserUploadFileInfo(AppAtTheDirectory() + _T("\\用户上传文件信息.txt"));
 CString NotConfigureFileName("聊天记录.txt");
 CString NotConfigureUserFileName("用户信息.txt");
+CString NotConfigureUserUploadFileInfo("用户上传文件信息.txt");
+CString FtpUserUploadFileDirectory("UserUploadFile\\");
 
 bool DevloperMode = false;
 bool HasUploadFileInServerName = false;
+int UserUploadFileNumber = 0;
 
 struct User
 {
@@ -49,7 +53,7 @@ CString AppAtTheDirectory()
 	return path;
 }
 
-void inline GetFtpInternetSession()
+void GetFtpInternetSession()
 {
 	CString FtpServerUrl("47.107.52.72");
 	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
@@ -425,11 +429,24 @@ void CSimpleChatDlg::OnBnClickedButton6()
 	CString UserUploadFileName;
 	CString UserUploadFileInServerName;
 
+	CString Temp;
+
+	++UserUploadFileNumber;
+
 	mEdit_4.GetWindowText(UserUploadFileName);
 	mEdit_5.GetWindowText(UserUploadFileInServerName);
 
+	Temp.Format(L"%d", UserUploadFileNumber);
+
 	if (UserUploadFileInServerName != _T("")) {
 		HasUploadFileInServerName = true;
-		Ftp->PutFile(UserUploadFileName, _T("UserUploadFile\\") + UserUploadFileInServerName);
+		Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + UserUploadFileInServerName);
+
+		FileWrite(UserUploadFileInfo, Temp + UserUploadFileInServerName);
+	}
+	else
+	{
+		UserUploadFileName.ReverseFind(_T('\\'));
+		Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + _T("Unnamed"));
 	}
 }
