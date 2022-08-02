@@ -235,6 +235,7 @@ void CSimpleChatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON5, m_Btn5);
 	DDX_Control(pDX, IDC_EDIT4, mEdit_4);
 	DDX_Control(pDX, IDC_EDIT5, mEdit_5);
+	DDX_Control(pDX, IDC_EDIT6, m_edit6);
 }
 
 BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
@@ -249,6 +250,7 @@ BEGIN_MESSAGE_MAP(CSimpleChatDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON2, &CSimpleChatDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON8, &CSimpleChatDlg::OnBnClickedButton8)
 	ON_BN_CLICKED(IDC_BUTTON6, &CSimpleChatDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON9, &CSimpleChatDlg::OnBnClickedButton9)
 END_MESSAGE_MAP()
 
 
@@ -360,6 +362,7 @@ void CSimpleChatDlg::OnBnClickedButton3() //写入
 
 	Ftp->PutFile(FileName, NotConfigureFileName);
 	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
+	Ftp->PutFile(UserUploadFileInfo, NotConfigureUserUploadFileInfo);
 }
 
 void CSimpleChatDlg::OnBnClickedButton4() //读取
@@ -440,13 +443,33 @@ void CSimpleChatDlg::OnBnClickedButton6()
 
 	if (UserUploadFileInServerName != _T("")) {
 		HasUploadFileInServerName = true;
-		Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + UserUploadFileInServerName);
-
-		FileWrite(UserUploadFileInfo, Temp + UserUploadFileInServerName);
 	}
 	else
 	{
-		UserUploadFileName.ReverseFind(_T('\\'));
-		Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + _T("Unnamed"));
+		UserUploadFileInServerName = UserUploadFileName;
+		int strLen = UserUploadFileInServerName.ReverseFind(_T('\\'));
+		UserUploadFileInServerName.Delete(0, strLen + 1);
+	}
+	FileWrite(UserUploadFileInfo, Temp + UserUploadFileInServerName);	
+#ifndef DEBUG
+	Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + UserUploadFileInServerName);
+#endif
+}
+
+
+void CSimpleChatDlg::OnBnClickedButton9()
+{
+	CString NumberOfFileUserNeed;
+	CString ReadStr;
+	int NumberOfFileUserNeedLocation = ReadStr.Find(NumberOfFileUserNeed);
+
+	m_edit6.GetWindowText(NumberOfFileUserNeed);
+
+	FileRead(UserUploadFileInfo, ReadStr);
+	if (NumberOfFileUserNeedLocation >= 0)
+	{
+		ReadStr.Delete(0, NumberOfFileUserNeedLocation + 1);
+		ReadStr.Delete(ReadStr.GetLength() - 1);
+		Ftp->GetFile(FtpUserUploadFileDirectory + ReadStr, AppAtTheDirectory());
 	}
 }

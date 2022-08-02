@@ -48,4 +48,6 @@ public:
 	CEdit mEdit_4;
 	CEdit mEdit_5; 
 	afx_msg void OnBnClickedButton6();
+	afx_msg void OnBnClickedButton9();
+	CEdit m_edit6;
 };
