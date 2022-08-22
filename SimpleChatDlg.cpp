@@ -8,13 +8,16 @@
 #include "SimpleChatDlg.h"
 #include "afxdialogex.h"
 #include "resource.h"
+#include "CopyOnCSDN.cpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+#define PleaseNewLine 0
+#define DoNotNewLine 1
+
 CString AppAtTheDirectory();
-DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash);
 CString UseHash(IN CString Str);
 
 CFtpConnection *Ftp;
@@ -24,14 +27,15 @@ CString Version("-v1.0.4");
 CString FileName(AppAtTheDirectory() + _T("\\聊天记录.txt"));
 CString UserFileName(AppAtTheDirectory() + _T("\\用户信息.txt"));
 CString UserUploadFileInfo(AppAtTheDirectory() + _T("\\用户上传文件信息.txt"));
+CString MiscFileName(AppAtTheDirectory() + _T("\\杂项文件.txt"));
 CString NotConfigureFileName("聊天记录.txt");
 CString NotConfigureUserFileName("用户信息.txt");
 CString NotConfigureUserUploadFileInfo("用户上传文件信息.txt");
+CString NotConfigureMiscFileName("杂项文件.txt");
 CString FtpUserUploadFileDirectory("UserUploadFile\\");
 
 bool DevloperMode = false;
 bool HasUploadFileInServerName = false;
-int UserUploadFileNumber = 0;
 
 struct User
 {
@@ -47,9 +51,6 @@ CString AppAtTheDirectory()
 	path.ReleaseBuffer();
 	path.Trim((_T("SimpleChat") + Version + _T(".exe")));
 	path.Insert(0, _T("C"));
-#ifdef DEBUG
-	AfxMessageBox(path);
-#endif // DEBUG
 	return path;
 }
 
@@ -57,10 +58,10 @@ void GetFtpInternetSession()
 {
 	CString FtpServerUrl("47.107.52.72");
 	CInternetSession * pInternetSession = new CInternetSession(AfxGetAppName(), 1, PRE_CONFIG_INTERNET_ACCESS);
-	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, NULL, NULL, 21);
+	Ftp = pInternetSession->GetFtpConnection(FtpServerUrl, CString("FtpUser"), CString("1z2t3a4J"), 21);
 }
 
-void FileWrite(IN CString & WriteFileName, IN CString & str)
+void FileWrite(IN CString & WriteFileName, IN CString & str, IN int Flag = PleaseNewLine)
 {
 	CStdioFile FileWrite;
 	if (!FileWrite.Open(WriteFileName, CFile::modeWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText))
@@ -68,7 +69,7 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 		AfxMessageBox(_T("打开文件失败!"));
 		return;
 	}
-	DWORD dwFileLen = FileWrite.GetLength();
+	DWORD dwFileLen = FileWrite.GetLength(); 
 	//if (0 == dwFileLen)
 	//{
 	//	const unsigned char LeadBytes[] = { 0xEF, 0xBB, 0xBF };
@@ -88,7 +89,8 @@ void FileWrite(IN CString & WriteFileName, IN CString & str)
 	FileWrite.SeekToEnd(); //定位到最后
 
 	FileWrite.Write(utf8String.GetBuffer(), nLen);//写入utf8字符串
-	FileWrite.Write(new_Line.GetBuffer(), 1);
+	if(Flag == PleaseNewLine)
+		FileWrite.Write(new_Line.GetBuffer(), 1);
 	FileWrite.Close();
 }
 
@@ -124,53 +126,6 @@ HBITMAP MakeBitmapIcon(IN int BaseIDBBitmap)
 	return hBitmap;
 }
 
-DWORD GetHash(BYTE* pbData, DWORD dwDataLen, ALG_ID algId, LPTSTR pszHash)
-{
-	DWORD dwReturn = 0;
-	HCRYPTPROV hProv;
-	if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
-		return (dwReturn = GetLastError());
-
-	HCRYPTHASH hHash;
-	//Alg Id:CALG_MD5,CALG_SHA
-	if (!CryptCreateHash(hProv, algId, 0, 0, &hHash))
-	{
-		dwReturn = GetLastError();
-		CryptReleaseContext(hProv, 0);
-		return dwReturn;
-	}
-
-	if (!CryptHashData(hHash, pbData, dwDataLen, 0))
-	{
-		dwReturn = GetLastError();
-		CryptDestroyHash(hHash);
-		CryptReleaseContext(hProv, 0);
-		return dwReturn;
-	}
-
-	DWORD dwSize;
-	DWORD dwLen = sizeof(dwSize);
-	CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)(&dwSize), &dwLen, 0);
-
-	BYTE* pHash = new BYTE[dwSize];
-	dwLen = dwSize;
-	CryptGetHashParam(hHash, HP_HASHVAL, pHash, &dwLen, 0);
-
-	lstrcpy(pszHash, _T(""));
-	TCHAR szTemp[3];
-	for (DWORD i = 0; i < dwLen; ++i)
-	{
-		//wsprintf(szTemp, _T("%X%X"), pHash[i] >> 4, pHash[i] & 0xf);
-		wsprintf(szTemp, L"%02X", pHash[i]);
-		lstrcat(pszHash, szTemp);
-	}
-	delete[] pHash;
-
-	CryptDestroyHash(hHash);
-	CryptReleaseContext(hProv, 0);
-	return dwReturn;
-}
-
 CString UseHash(IN CString Str)
 {
 	const int StrSize{ (int)wcslen(Str) };
@@ -179,6 +134,7 @@ CString UseHash(IN CString Str)
 	CString FinHashStr;
 	GetHash((BYTE *)StrTCharBuffer, StrSize, CALG_MD5, FinHashStr.GetBufferSetLength(32 + 1));
 	
+	delete[] StrTCharBuffer;
 	return FinHashStr;
 }
 
@@ -345,7 +301,13 @@ HCURSOR CSimpleChatDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
+void UploadFile()
+{
+	Ftp->PutFile(FileName, NotConfigureFileName);
+	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
+	Ftp->PutFile(UserUploadFileInfo, NotConfigureUserUploadFileInfo);
+	Ftp->PutFile(MiscFileName, NotConfigureMiscFileName);
+}
 
 void CSimpleChatDlg::OnBnClickedButton3() //写入
 {
@@ -358,11 +320,9 @@ void CSimpleChatDlg::OnBnClickedButton3() //写入
 	}
 	if(user.IsSetting == TRUE)
 		str.Insert(0, user.UserName + L": ");
-	FileWrite(FileName ,str);
+	FileWrite(FileName, str);
 
-	Ftp->PutFile(FileName, NotConfigureFileName);
-	Ftp->PutFile(UserFileName, NotConfigureUserFileName);
-	Ftp->PutFile(UserUploadFileInfo, NotConfigureUserUploadFileInfo);
+	UploadFile();
 }
 
 void CSimpleChatDlg::OnBnClickedButton4() //读取
@@ -389,12 +349,16 @@ void CSimpleChatDlg::OnBnClickedButton5() //从服务器下载文件
 	/*AfxMessageBox(AppAtTheDirectory());*/
     Ftp->GetFile(NotConfigureFileName, FileName, false);
 	Ftp->GetFile(NotConfigureUserFileName, UserFileName, false);
+	Ftp->GetFile(NotConfigureUserUploadFileInfo, UserUploadFileInfo, false);
+	Ftp->GetFile(NotConfigureMiscFileName, MiscFileName, false);
 }
 
 void CSimpleChatDlg::OnBnClickedButton7() //重置
 {
 	CFile::Remove(FileName);
 	CFile::Remove(UserFileName);
+	CFile::Remove(UserUploadFileInfo);
+	CFile::Remove(MiscFileName);
 	OnBnClickedButton5();
 }
 
@@ -429,17 +393,21 @@ void CSimpleChatDlg::OnBnClickedButton8()
 
 void CSimpleChatDlg::OnBnClickedButton6()
 {
+	int UserUploadFileNumber = 0;
 	CString UserUploadFileName;
 	CString UserUploadFileInServerName;
+	CString Temp, TestStr;
 
-	CString Temp;
-
+	FileRead(MiscFileName, Temp);
+	UserUploadFileNumber = atoi(ConvertLPWSTRToLPSTR(Temp.GetBuffer()));
 	++UserUploadFileNumber;
 
 	mEdit_4.GetWindowText(UserUploadFileName);
 	mEdit_5.GetWindowText(UserUploadFileInServerName);
 
 	Temp.Format(L"%d", UserUploadFileNumber);
+
+	FileWrite(MiscFileName, Temp);
 
 	if (UserUploadFileInServerName != _T("")) {
 		HasUploadFileInServerName = true;
@@ -450,10 +418,24 @@ void CSimpleChatDlg::OnBnClickedButton6()
 		int strLen = UserUploadFileInServerName.ReverseFind(_T('\\'));
 		UserUploadFileInServerName.Delete(0, strLen + 1);
 	}
+
+	for (int8_t i = 0; i < 10; i++)
+	{
+		TestStr.Format(L"%d", i);
+		if (UserUploadFileInServerName.Find(TestStr) >= 0) {
+			AfxMessageBox(L"错误:文件名中含有数字,会导致错误。", MB_OK, MB_ICONSTOP);
+			return;
+		}
+	}
+
 	FileWrite(UserUploadFileInfo, Temp + UserUploadFileInServerName);	
-#ifndef DEBUG
+	FileWrite(FileName, CString("一名用户上传了文件,文件名字为:"), DoNotNewLine);
+	FileWrite(FileName, UserUploadFileInServerName, DoNotNewLine);
+	FileWrite(FileName, CString(",编号为:"), DoNotNewLine);
+	FileWrite(FileName, Temp + CString("。"));
+	
+	UploadFile();
 	Ftp->PutFile(UserUploadFileName, FtpUserUploadFileDirectory + UserUploadFileInServerName);
-#endif
 }
 
 
@@ -461,15 +443,11 @@ void CSimpleChatDlg::OnBnClickedButton9()
 {
 	CString NumberOfFileUserNeed;
 	CString ReadStr;
-	int NumberOfFileUserNeedLocation = ReadStr.Find(NumberOfFileUserNeed);
-
+	
 	m_edit6.GetWindowText(NumberOfFileUserNeed);
-
 	FileRead(UserUploadFileInfo, ReadStr);
-	if (NumberOfFileUserNeedLocation >= 0)
-	{
-		ReadStr.Delete(0, NumberOfFileUserNeedLocation + 1);
-		ReadStr.Delete(ReadStr.GetLength() - 1);
-		Ftp->GetFile(FtpUserUploadFileDirectory + ReadStr, AppAtTheDirectory());
-	}
+	int NumberOfFileUserNeedLocation = ReadStr.Find(NumberOfFileUserNeed);
+	ReadStr.Delete(0, NumberOfFileUserNeedLocation + 1);
+	ReadStr.Delete(ReadStr.GetLength() - 1);
+	Ftp->GetFile(FtpUserUploadFileDirectory + ReadStr, AppAtTheDirectory() + L"\\" + ReadStr);
 }
